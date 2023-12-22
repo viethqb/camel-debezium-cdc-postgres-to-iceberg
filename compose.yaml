@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_camel
+    environment:
+      - POSTGRES_DB=postgres_camel
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=postgres
+    ports:
+      - "5432:5432"
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+  backend:
+    build: .
+    container_name: backend
+    environment:
+      - 'DB_HOST=postgres_camel'
+      - 'DB_PORT=5432'
+      - 'DB_NAME=postgres_camel'
+      - 'DB_USER=postgres'
+      - 'DB_PASSWORD=secret'
+    ports:
+      - '8081:8080'
+    depends_on:
+      - postgres
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_DOMAIN=minio
+    ports:
+      - 9001:9001
+      - 9000:9000
+    command: [ "server", "/data", "--console-address", ":9001" ]
+  mc:
+    depends_on:
+      - minio
+    image: minio/mc
+    container_name: mc
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc rm -r --force minio/lakehouse;
+      /usr/bin/mc mb minio/lakehouse;
+      /usr/bin/mc policy set public minio/lakehouse;
+      tail -f /dev/null
+      "
+  meta-store-db:
+    image: postgres:14-alpine
+    container_name: meta-store-db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=metastore_db
+    ports:
+      - '15432:5432'
+  hive-metastore:
+    build: hive-metastore/
+    container_name: hive-metastore
+    environment:
+      - DATABASE_HOST=meta-store-db
+      - DATABASE_DB=metastore_db
+      - DATABASE_USER=admin
+      - DATABASE_PASSWORD=admin
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - S3_ENDPOINT_URL=http://minio:9000
+      - S3_BUCKET=lakehouse
+    ports:
+      - 9083:9083
+    depends_on:
+      - meta-store-db
+  trino-coordinator:
+    image: trinodb/trino:422
+    container_name: trino-coordinator
+    ports:
+      - '9090:8080'
+    volumes:
+      - ./trino:/etc/trino
+  
+
