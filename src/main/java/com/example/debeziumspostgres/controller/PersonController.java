@@ -1,5 +1,8 @@
-package com.example.debeziumspostgres.person;
+package com.example.debeziumspostgres.controller;
 
+import com.example.debeziumspostgres.dto.PersonDTO;
+import com.example.debeziumspostgres.entity.Person;
+import com.example.debeziumspostgres.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

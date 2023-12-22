@@ -1,4 +1,4 @@
-package com.example.debeziumspostgres.person;
+package com.example.debeziumspostgres.dto;
 
 
 import lombok.Getter;
