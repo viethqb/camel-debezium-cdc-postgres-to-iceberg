@@ -1,4 +1,4 @@
-package com.example.debeziumspostgres.entity;
+package com.example.debeziumspostgres.model;
 
 import com.google.gson.Gson;
 import jakarta.persistence.Entity;

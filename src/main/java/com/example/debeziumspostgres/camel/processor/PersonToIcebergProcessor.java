@@ -1,6 +1,6 @@
 package com.example.debeziumspostgres.camel.processor;
 
-import com.example.debeziumspostgres.entity.Person;
+import com.example.debeziumspostgres.model.Person;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.kafka.connect.data.Struct;

@@ -1,6 +1,6 @@
 package com.example.debeziumspostgres.repository;
 
-import com.example.debeziumspostgres.entity.Person;
+import com.example.debeziumspostgres.model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
